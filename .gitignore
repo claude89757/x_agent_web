@@ -1,0 +1,17 @@
+*.pyc
+/.idea
+/.venv
+/runs
+/tracker_stubs
+/logs
+*.pt
+*.pth
+*.cache
+*.avi
+*.mp4
+test_*
+*.log
+*.png
+*.csv
+*.json
+.env
