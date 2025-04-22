@@ -15,28 +15,35 @@
 ## 安装
 1. 克隆本仓库：
    ```bash
-   git clone https://github.com/yourusername/yourproject.git
+   git clone https://github.com/yourusername/x_agent_web.git
    ```
 2. 进入项目目录：
    ```bash
-   cd yourproject
+   cd x_agent_web
    ```
-3. 安装依赖：
+3. 安装依赖和环境变量配置：
    ```bash
    pip install -r requirements.txt
+
+   cp .env.example .env
+
+   # 填入环境变量信息
+   vim .env 
    ```
+
 
 ## 使用
 1. 启动 Streamlit 应用：
    ```bash
-   streamlit run 主页.py
+   streamlit run 主页.py --server.port=80
+   ```
+   
+2. 后台启动 Streamlit 应用：
+   ```bash
+   nohup streamlit run 主页.py --server.port=80 > streamlit.log 2>&1 &
    ```
 2. 在浏览器中访问 `http://localhost:8501`，根据界面提示进行操作。
 
-## 配置
-- 在 `config.json` 中配置数据库连接、API 密钥和其他必要的参数。
-- 确保 `MySQLDatabase` 和其他数据库相关模块已正确配置。
-- 配置 `openai.py` 中的 OpenAI API 密钥以启用 GPT 模型功能。
 
 ## 目录结构
 - `pages/`：包含不同功能模块的实现，如数据收集、分析和消息生成。
