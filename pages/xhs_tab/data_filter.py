@@ -93,6 +93,13 @@ def data_filter(db: MySQLDatabase):
             # 显示过滤后的数据
             st.subheader("过滤后的评论数据")
             st.dataframe(df)
+            
+            # 将过滤后的数据保存到session_state中
+            st.session_state.filtered_comments = df
+            
+            # 添加一个按钮来传递数据到分析页面
+            if st.button("传递到分析页面"):
+                st.success("数据已传递到分析页面，请切换到分析标签页查看")
 
         else:
             st.warning("⚠️ 没有找到相关评论数据")
