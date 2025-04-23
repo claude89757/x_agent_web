@@ -42,52 +42,54 @@ def data_filter(db: MySQLDatabase):
         if comments:
             st.write(f"原始评论数量: {len(comments)}")
 
+            # 2. 内容质量过滤
+            # 添加过滤条件的控制面板
+            st.subheader("过滤条件设置")
+            
+            # 使用列布局来组织过滤条件
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # 点赞数过滤
+                min_likes = st.number_input("最小点赞数", min_value=0, value=0)
+            
+            with col2:
+                # 评论长度过滤
+                min_length = st.number_input("最小评论长度", min_value=2, value=2)
+            
+            with col3:
+                # 关键词过滤
+                filter_keywords = st.text_input("过滤关键词（用逗号分隔）").split(',')
+
             # 过滤和处理数据
             df = pd.DataFrame(comments)
             
-            # TODO(ivy): 添加数据过滤规则
-            # # 预处理评论内容
-            # df['reply_content'] = df['reply_content'].apply(preprocess_comment)
+            # 1. 基础数据清洗
+            # 去除空评论
+            df = df.dropna(subset=['content'])
             
-            # # 1. 过滤长度小于或等于5的评论
-            # df = df[df['reply_content'].str.len() > 5]
-
-            # # 2. 相同用户ID的评论合并成一条
-            # df = df.groupby('user_id').agg({
-            #     'tweet_id': 'first',
-            #     'keyword': 'first',
-            #     'reply_content': lambda x: ' '.join(x),
-            #     'reply_time': 'first',
-            #     'likes_count': 'sum',
-            #     'is_pinned': 'any',
-            #     'parent_comment_id': 'first',
-            #     'collected_at': 'first',
-            #     'collected_by': 'first',
-            #     'tweet_url': 'first'
-            # }).reset_index()
-
-            # # 3. 重复评论用户或者评论内容相同的，去重
-            # df = df.drop_duplicates(subset=['user_id', 'reply_content'])
-
-            # st.write(f"过滤后的评论数量: {len(df)}")
-
-            # # 数据过滤规则
-            # st.caption("数据过滤规则:")
-            # st.markdown("""
-            # - 删除评论中的逗号、单引号和双引号
-            # - 过滤长度小于或等于5的评论
-            # - 相同用户ID的评论合并成一条
-            # - 对重复的用户评论或相同内容的评论进行去重处理
-            # """)
-
-            # # 保存过滤后的数据
-            # if st.button("保存过滤后的数据", type="primary"):
-            #     try:
-            #         saved_count = db.save_filtered_x_comments(df.to_dict('records'))
-            #         st.success(f"✅ 成功保存 {saved_count} 条过滤后的评论")
-            #     except Exception as e:
-            #         st.error(f"❌ 保存过滤后的数据时发生错误: {str(e)}")
-
+            # 去除纯表情符号评论（使用正则表达式匹配表情符号）
+            df = df[df['content'].str.replace(r'[\U0001F300-\U0001F9FF]', '', regex=True).str.strip().str.len() > 0]
+            
+            # 去除重复评论
+            df = df.drop_duplicates(subset=['content'])
+            
+            # 去除过短评论（少于2个字符）
+            df = df[df['content'].str.len() > 2]
+            
+            # 应用用户设置的过滤条件
+            if min_likes > 0:
+                df = df[df['likes'] >= min_likes]
+            
+            df = df[df['content'].str.len() >= min_length]
+            
+            if filter_keywords and filter_keywords[0]:  # 确保输入不为空
+                filter_pattern = '|'.join(filter_keywords)
+                df = df[df['content'].str.contains(filter_pattern, case=False, na=False)]
+            
+            # 显示过滤统计
+            st.write(f"过滤后评论数量: {len(df)}")
+            
             # 显示过滤后的数据
             st.subheader("过滤后的评论数据")
             st.dataframe(df)
