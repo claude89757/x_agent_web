@@ -37,7 +37,7 @@ def data_filter(db: MySQLDatabase):
 
     if selected_keyword:
         # 获取选定关键字的评论数据
-        comments = db.get_xhs_comments(limit=100)
+        comments = db.get_xhs_comments_by_keyword(selected_keyword)
 
         if comments:
             st.write(f"原始评论数量: {len(comments)}")
