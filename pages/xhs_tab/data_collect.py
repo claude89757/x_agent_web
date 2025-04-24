@@ -32,34 +32,40 @@ def create_notes_collection_task():
         submit_button = st.form_submit_button(label="创建笔记采集任务")
         
         if submit_button:
-            # 验证关键字是否输入
-            if not keyword.strip():
-                st.error("请输入关键字")
-                return
-            
-            # 创建AirflowClient实例
-            airflow = AirflowClient()
-            
-            # 自动生成任务ID和备注
-            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            dag_run_id = f"{keyword}_{timestamp}"
-            
-            # 准备配置参数
-            conf = {
-                "keyword": keyword,
-                "note_count": int(note_count)
-            }
-            
-            # 触发DAG运行
-            result = airflow.trigger_dag_run(
-                dag_id="xhs_notes_collector",
-                dag_run_id=dag_run_id,
-                conf=conf,
-            )
+            try:
+                # 验证关键字是否输入
+                if not keyword.strip():
+                    st.error("请输入关键字")
+                    return
+                
+                # 创建AirflowClient实例
+                airflow = AirflowClient()
+                
+                # 自动生成任务ID和备注
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                # 将关键词转换为 ASCII 安全的字符串
+                safe_keyword = ''.join(c if c.isalnum() or c == '_' else '_' for c in keyword)
+                # 确保 dag_run_id 只包含字母、数字和下划线
+                dag_run_id = f"xhs_{safe_keyword}_{timestamp}"
+                
+                # 准备配置参数
+                conf = {
+                    "keyword": keyword,  # 保留原始关键词用于实际查询
+                    "note_count": int(note_count)
+                }
+                
+                # 触发DAG运行
+                result = airflow.trigger_dag_run(
+                    dag_id="xhs_notes_collector",
+                    dag_run_id=dag_run_id,
+                    conf=conf,
+                )
 
-            st.success(f"成功创建笔记采集任务，任务ID: {result.get('dag_run_id')}")
-            logger.info(f"成功创建笔记采集任务，关键词: {keyword}, 笔记数量: {note_count}, 任务ID: {result.get('dag_run_id')}")
-        
+                st.success(f"成功创建笔记采集任务，任务ID: {result.get('dag_run_id')}")
+                logger.info(f"成功创建笔记采集任务，关键词: {keyword}, 笔记数量: {note_count}, 任务ID: {result.get('dag_run_id')}")
+            except Exception as e:
+                st.error(f"创建笔记采集任务失败: {str(e)}")
+                logger.error(f"创建笔记采集任务失败: {str(e)}")
 
 
 def get_recent_notes_collection_tasks():
