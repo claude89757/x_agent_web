@@ -26,7 +26,7 @@ def create_notes_collection_task():
             keyword = st.text_input("关键字")
         
         with col2:
-            note_count = st.number_input("采集笔记数量", min_value=1, max_value=1000, value=100, step=10, 
+            max_notes = st.number_input("采集笔记数量", min_value=1, max_value=1000, value=100, step=10, 
                                       help="指定要采集的笔记数量上限")
         
         submit_button = st.form_submit_button(label="创建笔记采集任务")
@@ -46,12 +46,12 @@ def create_notes_collection_task():
                 # 将关键词转换为 ASCII 安全的字符串
                 safe_keyword = ''.join(c if c.isalnum() or c == '_' else '_' for c in keyword)
                 # 确保 dag_run_id 只包含字母、数字和下划线
-                dag_run_id = f"xhs_{safe_keyword}_{timestamp}"
+                dag_run_id = f"xhs_{timestamp}"
                 
                 # 准备配置参数
                 conf = {
                     "keyword": keyword,  # 保留原始关键词用于实际查询
-                    "note_count": int(note_count)
+                    "max_notes": int(max_notes)
                 }
                 
                 # 触发DAG运行
@@ -62,7 +62,7 @@ def create_notes_collection_task():
                 )
 
                 st.success(f"成功创建笔记采集任务，任务ID: {result.get('dag_run_id')}")
-                logger.info(f"成功创建笔记采集任务，关键词: {keyword}, 笔记数量: {note_count}, 任务ID: {result.get('dag_run_id')}")
+                logger.info(f"成功创建笔记采集任务，关键词: {keyword}, 笔记数量: {max_notes}, 任务ID: {result.get('dag_run_id')}")
             except Exception as e:
                 st.error(f"创建笔记采集任务失败: {str(e)}")
                 logger.error(f"创建笔记采集任务失败: {str(e)}")
