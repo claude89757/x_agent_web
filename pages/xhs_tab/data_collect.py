@@ -144,9 +144,49 @@ def get_show_keyword(db: MySQLDatabase):
     if 'cached_keyword' not in st.session_state:
         st.session_state.cached_keyword = keywords[0] if keywords else ""
     
-    selected_keyword = st.selectbox("选择关键字", keywords, 
-                                    index=keywords.index(st.session_state.cached_keyword) if st.session_state.cached_keyword in keywords else 0,
-                                    key="collect_keyword_select")
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_keyword = st.selectbox("选择关键字", keywords, 
+                                        index=keywords.index(st.session_state.cached_keyword) if st.session_state.cached_keyword in keywords else 0,
+                                        key="collect_keyword_select")
+    
+    with col2:
+        max_comments = st.number_input("采集评论笔记篇数", min_value=1, max_value=1000, value=50, step=10, 
+                                      help="指定要采集评论的笔记数量上限")
+    
+    # 添加创建笔记评论收集任务按钮
+    if st.button("创建笔记评论收集任务"):
+        try:
+            # 验证关键字是否选择
+            if not selected_keyword.strip():
+                st.error("请选择关键字")
+                return selected_keyword
+            
+            # 创建AirflowClient实例
+            airflow = AirflowClient()
+            
+            # 自动生成任务ID
+            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            dag_run_id = f"xhs_comments_{timestamp}"
+            
+            # 准备配置参数
+            conf = {
+                "keyword": selected_keyword,
+                "max_comments": int(max_comments)
+            }
+            
+            # 触发DAG运行
+            result = airflow.trigger_dag_run(
+                dag_id="xhs_comments_collector",
+                dag_run_id=dag_run_id,
+                conf=conf,
+            )
+
+            st.success(f"成功创建笔记评论收集任务，任务ID: {result.get('dag_run_id')}")
+            logger.info(f"成功创建笔记评论收集任务，关键词: {selected_keyword}, 评论笔记篇数: {max_comments}, 任务ID: {result.get('dag_run_id')}")
+        except Exception as e:
+            st.error(f"创建笔记评论收集任务失败: {str(e)}")
+            logger.error(f"创建笔记评论收集任务失败: {str(e)}")
     
     return selected_keyword
 
