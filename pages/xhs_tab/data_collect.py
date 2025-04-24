@@ -43,10 +43,8 @@ def create_notes_collection_task():
                 
                 # 自动生成任务ID和备注
                 timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                # 将关键词转换为 ASCII 安全的字符串
-                safe_keyword = ''.join(c if c.isalnum() or c == '_' else '_' for c in keyword)
                 # 确保 dag_run_id 只包含字母、数字和下划线
-                dag_run_id = f"xhs_{timestamp}"
+                dag_run_id = f"xhs_notes_{timestamp}"
                 
                 # 准备配置参数
                 conf = {
