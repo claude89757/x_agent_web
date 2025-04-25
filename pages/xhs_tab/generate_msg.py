@@ -108,145 +108,199 @@ def generate_msg(db: MySQLDatabase):
                 st.success(f"数据已准备好，点击上方按钮下载 {filename}")
             
             # 添加文案生成部分
-            st.markdown("---")
-            st.subheader("批量生成回复文案")
+    #         st.markdown("---")
+    #         st.subheader("批量生成回复文案")
             
-            # 初始化session_state变量
-            if 'dag_run_id' not in st.session_state:
-                st.session_state.dag_run_id = None
-            if 'dag_id' not in st.session_state:
-                st.session_state.dag_id = "xhs_reply_generator"
-            if 'generation_status' not in st.session_state:
-                st.session_state.generation_status = None
+    #         # 初始化session_state变量
+    #         if 'dag_run_id' not in st.session_state:
+    #             st.session_state.dag_run_id = None
+    #         if 'dag_id' not in st.session_state:
+    #             st.session_state.dag_id = "xhs_reply_generator"
+    #         if 'generation_status' not in st.session_state:
+    #             st.session_state.generation_status = None
             
-            # 检查是否有可用的评论ID
-            if 'comment_id' in customer_df.columns or 'id' in customer_df.columns:
-                # 显示评论数量
-                comment_count = len(customer_df)
-                st.write(f"检测到 {comment_count} 条评论可用于生成回复文案")
+    #         # 检查是否有可用的评论ID
+    #         if 'comment_id' in customer_df.columns or 'id' in customer_df.columns:
+    #             # 显示评论数量
+    #             comment_count = len(customer_df)
+    #             st.write(f"检测到 {comment_count} 条评论可用于生成回复文案")
                 
-                # 提示文本输入
-                reply_prompt = st.text_area(
-                    "请输入回复文案生成提示", 
-                    placeholder="例如：请生成一段友好的回复，告知用户我们的产品优势和特点...",
-                    help="输入提示内容以指导AI生成适合的回复文案"
-                )
+    #             # 提示文本输入
+    #             reply_prompt = st.text_area(
+    #                 "请输入回复文案生成提示", 
+    #                 placeholder="例如：请生成一段友好的回复，告知用户我们的产品优势和特点...",
+    #                 help="输入提示内容以指导AI生成适合的回复文案"
+    #             )
                 
-                # 文案生成按钮
-                if st.button("生成回复文案", type="primary"):
-                    if not reply_prompt.strip():
-                        st.warning("请输入回复文案生成提示")
-                    else:
-                        # 显示进度信息
-                        status_text = st.empty()
-                        status_text.text(f"正在准备生成回复文案，共 {comment_count} 条...")
+    #             # 文案生成按钮
+    #             if st.button("生成回复文案", type="primary"):
+    #                 if not reply_prompt.strip():
+    #                     st.warning("请输入回复文案生成提示")
+    #                 else:
+    #                     # 显示进度信息
+    #                     status_text = st.empty()
+    #                     status_text.text(f"正在准备生成回复文案，共 {comment_count} 条...")
                         
-                        # 获取所有评论ID - 修改为使用comment_id字段
-                        if 'comment_id' in customer_df.columns:
-                            comment_ids = customer_df['comment_id'].tolist()
-                        elif 'id' in customer_df.columns:
-                            comment_ids = customer_df['id'].tolist()
-                        else:
-                            st.error("无法找到评论ID列，请确保数据中包含'comment_id'或'id'列")
-                            return
+    #                     # 获取所有评论ID - 修改为使用comment_id字段
+    #                     if 'comment_id' in customer_df.columns:
+    #                         comment_ids = customer_df['comment_id'].tolist()
+    #                     elif 'id' in customer_df.columns:
+    #                         comment_ids = customer_df['id'].tolist()
+    #                     else:
+    #                         st.error("无法找到评论ID列，请确保数据中包含'comment_id'或'id'列")
+    #                         return
                         
-                        # 准备DAG运行配置
-                        conf = {
-                            "reply_prompt": reply_prompt,
-                            "comment_ids": comment_ids
-                        }
+    #                     # 准备DAG运行配置
+    #                     conf = {
+    #                         "reply_prompt": reply_prompt,
+    #                         "comment_ids": comment_ids
+    #                     }
                         
-                        # 生成唯一的 DAG 运行 ID
-                        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                        dag_run_id = f"xhs_reply_generator_{timestamp}"
+    #                     # 生成唯一的 DAG 运行 ID
+    #                     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    #                     dag_run_id = f"xhs_reply_generator_{timestamp}"
                         
-                        # 触发DAG运行
-                        try:
-                            # 创建AirflowClient实例
-                            airflow = AirflowClient()
+    #                     # 触发DAG运行
+    #                     try:
+    #                         # 创建AirflowClient实例
+    #                         airflow = AirflowClient()
                             
-                            dag_id = "xhs_reply_generator"
-                            result = airflow.trigger_dag_run(
-                                dag_id=dag_id,
-                                dag_run_id=dag_run_id,
-                                conf=conf
-                            )
+    #                         dag_id = "xhs_reply_generator"
+    #                         result = airflow.trigger_dag_run(
+    #                             dag_id=dag_id,
+    #                             dag_run_id=dag_run_id,
+    #                             conf=conf
+    #                         )
                             
-                            if result and 'dag_run_id' in result:
-                                # 保存DAG运行ID到session_state
-                                st.session_state.dag_run_id = result['dag_run_id']
-                                st.session_state.dag_id = dag_id
-                                st.session_state.generation_status = "running"
+    #                         if result and 'dag_run_id' in result:
+    #                             # 保存DAG运行ID到session_state
+    #                             st.session_state.dag_run_id = result['dag_run_id']
+    #                             st.session_state.dag_id = dag_id
+    #                             st.session_state.generation_status = "running"
                                 
-                                # 显示DAG运行状态
-                                status_text.text(f"已提交生成任务，任务ID: {result['dag_run_id']}，正在处理中...")
-                            else:
-                                st.error("提交生成任务失败，请检查Airflow服务是否正常运行")
-                        except Exception as e:
-                            logger.error(f"触发DAG运行时出错: {str(e)}")
-                            st.error(f"生成过程中出现错误: {str(e)}")
+    #                             # 显示DAG运行状态
+    #                             status_text.text(f"已提交生成任务，任务ID: {result['dag_run_id']}，正在处理中...")
+    #                         else:
+    #                             st.error("提交生成任务失败，请检查Airflow服务是否正常运行")
+    #                     except Exception as e:
+    #                         logger.error(f"触发DAG运行时出错: {str(e)}")
+    #                         st.error(f"生成过程中出现错误: {str(e)}")
                 
-                # 检查生成状态按钮 - 只要有DAG运行ID就显示
-                if st.session_state.dag_run_id:
-                    status_container = st.container()
+    #             # 检查生成状态按钮 - 只要有DAG运行ID就显示
+    #             if st.session_state.dag_run_id:
+    #                 status_container = st.container()
                     
-                    # 添加检查状态按钮
-                    if st.button("检查回复文案生成状态", key="check_generation_status"):
-                        try:
-                            # 创建AirflowClient实例
-                            airflow = AirflowClient()
+    #                 # 添加检查状态按钮
+    #                 if st.button("检查回复文案生成状态", key="check_generation_status"):
+    #                     try:
+    #                         # 创建AirflowClient实例
+    #                         airflow = AirflowClient()
                             
-                            # 获取DAG运行状态 - 修改为使用get_dag_runs方法
-                            dag_runs = airflow.get_dag_runs(
-                                dag_id=st.session_state.dag_id,
-                                limit=10,  # 限制返回结果数量
-                                order_by="-start_date"  # 按开始时间降序排序
-                            )
+    #                         # 获取DAG运行状态 - 修改为使用get_dag_runs方法
+    #                         dag_runs = airflow.get_dag_runs(
+    #                             dag_id=st.session_state.dag_id,
+    #                             limit=10,  # 限制返回结果数量
+    #                             order_by="-start_date"  # 按开始时间降序排序
+    #                         )
                             
-                            # 从结果中查找特定的DAG运行
-                            dag_run = None
-                            if dag_runs and 'dag_runs' in dag_runs:
-                                for run in dag_runs['dag_runs']:
-                                    if run.get('dag_run_id') == st.session_state.dag_run_id:
-                                        dag_run = run
-                                        break
+    #                         # 从结果中查找特定的DAG运行
+    #                         dag_run = None
+    #                         if dag_runs and 'dag_runs' in dag_runs:
+    #                             for run in dag_runs['dag_runs']:
+    #                                 if run.get('dag_run_id') == st.session_state.dag_run_id:
+    #                                     dag_run = run
+    #                                     break
                             
-                            if dag_run:
-                                state = dag_run.get('state', 'UNKNOWN')
-                                st.session_state.generation_status = state
+    #                         if dag_run:
+    #                             state = dag_run.get('state', 'UNKNOWN')
+    #                             st.session_state.generation_status = state
                                 
-                                # 根据状态显示不同的信息
-                                if state == 'success':
-                                    status_container.success(f"回复文案生成任务已完成。任务ID: {st.session_state.dag_run_id}")
+    #                             # 根据状态显示不同的信息
+    #                             if state == 'success':
+    #                                 status_container.success(f"回复文案生成任务已完成。任务ID: {st.session_state.dag_run_id}")
                                     
-                                    # 添加查看结果的按钮或链接
-                                    # 这里可以添加查询和显示生成结果的代码
-                                    status_container.info("请到结果查询页面查看生成的回复文案。")
+    #                                 # 添加查看结果的按钮或链接
+    #                                 # 这里可以添加查询和显示生成结果的代码
+    #                                 status_container.info("请到结果查询页面查看生成的回复文案。")
                                     
-                                elif state == 'running' or state == 'queued':
-                                    status_container.info(f"回复文案生成任务正在进行中... 状态: {state}")
-                                else:
-                                    status_container.warning(f"回复文案生成任务状态: {state}")
-                            else:
-                                status_container.error("无法获取回复文案生成任务状态，请稍后再试")
-                        except Exception as e:
-                            logger.error(f"获取DAG运行状态时出错: {str(e)}")
-                            status_container.error(f"获取任务状态时出现错误: {str(e)}")
+    #                             elif state == 'running' or state == 'queued':
+    #                                 status_container.info(f"回复文案生成任务正在进行中... 状态: {state}")
+    #                             else:
+    #                                 status_container.warning(f"回复文案生成任务状态: {state}")
+    #                         else:
+    #                             status_container.error("无法获取回复文案生成任务状态，请稍后再试")
+    #                     except Exception as e:
+    #                         logger.error(f"获取DAG运行状态时出错: {str(e)}")
+    #                         status_container.error(f"获取任务状态时出现错误: {str(e)}")
+    #         else:
+    #             st.warning("客户数据中缺少ID字段，无法生成回复文案")
+    #     else:
+    #         st.warning("未找到符合条件的意向客户数据")
+        
+        #添加设置语料库部分
+        # 添加分隔线
+        st.markdown("---")
+        
+        # 设置跟评语料库部分
+        st.subheader("设置跟评语料库")
+        st.info("本部分用于设置和管理跟评语料库，可用于生成回复文案的参考")
+        
+        # 初始化session_state变量
+        if 'corpus_list' not in st.session_state:
+            st.session_state.corpus_list = []
+        
+        # 选择语料数量
+        corpus_count = st.slider("选择要输入的语料数量", min_value=5, max_value=20, value=5, step=1)
+        
+        # 创建输入框
+        corpus_inputs = []
+        for i in range(corpus_count):
+            corpus = st.text_area(
+                f"语料 {i+1}",
+                placeholder="请输入跟评语料...",
+                key=f"corpus_{i}"
+            )
+            corpus_inputs.append(corpus)
+        
+        # 添加语料按钮
+        if st.button("添加语料到语料库", type="primary"):
+            # 过滤掉空语料
+            valid_corpus = [corpus for corpus in corpus_inputs if corpus.strip()]
+            
+            if valid_corpus:
+                # 添加到session_state
+                st.session_state.corpus_list.extend(valid_corpus)
+                st.success(f"成功添加 {len(valid_corpus)} 条语料到语料库")
             else:
-                st.warning("客户数据中缺少ID字段，无法生成回复文案")
-        else:
-            st.warning("未找到符合条件的意向客户数据")
+                st.warning("请输入有效的语料内容")
+        
+        # 展示已设置的语料库
+        if st.session_state.corpus_list:
+            st.markdown("---")
+            st.subheader("已设置的语料库")
+            
+            # 显示语料数量
+            st.write(f"当前语料库共有 {len(st.session_state.corpus_list)} 条语料")
+            
+            # 显示语料列表
+            for i, corpus in enumerate(st.session_state.corpus_list, 1):
+                st.text_area(f"语料 {i}", corpus, disabled=True)
+            
+            # 清空语料库按钮
+            if st.button("清空语料库", type="secondary"):
+                st.session_state.corpus_list = []
+                st.success("语料库已清空")
+        
+        # 添加分隔线
+        st.markdown("---")
+        
+        # 展示已生成的回复文案
+        st.subheader("已生成的回复文案")
+        st.info("本部分展示已生成的回复文案，可查看和导出")
     
     except Exception as e:
         logger.error(f"获取意向客户数据时出错: {str(e)}")
         st.error(f"获取意向客户数据时出现错误: {str(e)}")
-    
-    # 添加分隔线
-    st.markdown("---")
-    
-    # 展示已生成的回复文案
-    st.subheader("已生成的回复文案")
-    st.info("本部分展示已生成的回复文案，可查看和导出")
     
     try:
         # 查询已生成的回复文案
