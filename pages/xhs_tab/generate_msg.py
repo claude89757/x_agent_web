@@ -240,3 +240,71 @@ def generate_msg(db: MySQLDatabase):
     except Exception as e:
         logger.error(f"获取意向客户数据时出错: {str(e)}")
         st.error(f"获取意向客户数据时出现错误: {str(e)}")
+    
+    # 添加分隔线
+    st.markdown("---")
+    
+    # 展示已生成的回复文案
+    st.subheader("已生成的回复文案")
+    st.info("本部分展示已生成的回复文案，可查看和导出")
+    
+    try:
+        # 查询已生成的回复文案
+        query = """
+        SELECT cr.id, cr.comment_id, cr.author, cr.content, cr.reply, 
+               cr.note_url, cr.generated_at, cr.is_sent
+        FROM comment_reply cr
+        ORDER BY cr.generated_at DESC
+        LIMIT 100
+        """
+        
+        reply_data = db.execute_query(query)
+        
+        if reply_data:
+            # 转换为DataFrame并显示
+            reply_df = pd.DataFrame(reply_data)
+            
+            # 显示数据统计
+            st.write(f"找到 {len(reply_df)} 条已生成的回复文案")
+            
+            # 添加筛选功能
+            is_sent_options = ["全部", "已发送", "未发送"]
+            selected_is_sent = st.selectbox("按发送状态筛选", is_sent_options, key="reply_is_sent_filter")
+            
+            # 根据发送状态筛选
+            if selected_is_sent == "已发送":
+                filtered_reply_df = reply_df[reply_df['is_sent'] == 1]
+            elif selected_is_sent == "未发送":
+                filtered_reply_df = reply_df[reply_df['is_sent'] == 0]
+            else:
+                filtered_reply_df = reply_df
+            
+            # 显示筛选后的数据统计
+            st.write(f"筛选后共 {len(filtered_reply_df)} 条回复文案")
+            
+            # 显示数据表格
+            st.dataframe(filtered_reply_df, use_container_width=True)
+            
+            # 添加导出功能
+            if st.button("导出回复文案", key="export_reply_data"):
+                # 将DataFrame转换为CSV
+                csv = filtered_reply_df.to_csv(index=False)
+                
+                # 创建下载按钮
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"回复文案_{timestamp}.csv"
+                
+                st.download_button(
+                    label="下载CSV文件",
+                    data=csv,
+                    file_name=filename,
+                    mime="text/csv",
+                    key="download_reply_csv"
+                )
+                st.success(f"数据已准备好，点击上方按钮下载 {filename}")
+        else:
+            st.warning("未找到已生成的回复文案数据")
+    
+    except Exception as e:
+        logger.error(f"获取回复文案数据时出错: {str(e)}")
+        st.error(f"获取回复文案数据时出现错误: {str(e)}")
