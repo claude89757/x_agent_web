@@ -59,7 +59,7 @@ def data_filter(db: MySQLDatabase):
             
             with col3:
                 # 关键词过滤
-                filter_keywords = st.text_input("过滤关键词（用逗号分隔）").split(',')
+                filter_keywords = st.text_input("筛选关键词（用逗号分隔）").split(',')
 
             # 过滤和处理数据
             df = pd.DataFrame(comments)

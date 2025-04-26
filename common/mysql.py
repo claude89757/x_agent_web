@@ -125,12 +125,26 @@ class MySQLDatabase:
             # self._create_tiktok_filtered_comments_table(),
             # self._create_tiktok_analyzed_comments_table(),
             # self._create_tiktok_second_round_analyzed_comments_table(),
+            self._create_reply_template_table(),
         ]
 
         for query in create_tables_queries:
             self.execute_update(query)
         
         logger.info("所有必要的表和索引已创建或已存在")
+        
+    def _create_reply_template_table(self):
+        """创建回复模板表"""
+        return """
+        CREATE TABLE IF NOT EXISTS reply_template (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id VARCHAR(50) NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """
     
     def get_all_x_keywords(self):
         """获取所有关键字"""
@@ -168,6 +182,45 @@ class MySQLDatabase:
         params = (keyword,)
         result = self.execute_query(query, params)
         return result
+        
+    def get_reply_templates(self, user_id="zacks"):
+        """获取用户的回复模板"""
+        query = "SELECT id, user_id, content, created_at FROM reply_template WHERE user_id = %s ORDER BY created_at DESC"
+        params = (user_id,)
+        result = self.execute_query(query, params)
+        return result
+    
+    def add_reply_template(self, content, user_id="zacks"):
+        """添加回复模板"""
+        query = "INSERT INTO reply_template (user_id, content) VALUES (%s, %s)"
+        params = (user_id, content)
+        return self.execute_update(query, params)
+    
+    def add_reply_templates(self, templates, user_id="zacks"):
+        """批量添加回复模板"""
+        if not templates:
+            return 0
+        query = "INSERT INTO reply_template (user_id, content) VALUES (%s, %s)"
+        data = [(user_id, template) for template in templates]
+        return self.insert_many(query, data)
+    
+    def delete_reply_template(self, template_id, user_id="zacks"):
+        """删除指定ID的回复模板"""
+        query = "DELETE FROM reply_template WHERE id = %s AND user_id = %s"
+        params = (template_id, user_id)
+        return self.execute_update(query, params)
+    
+    def delete_all_reply_templates(self, user_id="zacks"):
+        """删除用户的所有回复模板"""
+        query = "DELETE FROM reply_template WHERE user_id = %s"
+        params = (user_id,)
+        return self.execute_update(query, params)
+        
+    def update_reply_template(self, template_id, content, user_id="zacks"):
+        """更新指定ID的回复模板内容"""
+        query = "UPDATE reply_template SET content = %s WHERE id = %s AND user_id = %s"
+        params = (content, template_id, user_id)
+        return self.execute_update(query, params)
 
 
 # 使用示例
