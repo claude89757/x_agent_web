@@ -463,6 +463,43 @@ def generate_msg(db: MySQLDatabase):
             # 显示筛选后的数据统计
             st.write(f"筛选后共 {len(filtered_reply_df)} 条回复文案")
             
+            # 为未发送的消息添加选择框
+            if selected_is_sent == "未发送":
+                # 初始化会话状态存储选中的消息
+                if 'selected_comments' not in st.session_state:
+                    st.session_state.selected_comments = {}
+                
+                # 显示勾选框
+                st.write("选择要发送的评论:")
+                for index, row in filtered_reply_df.iterrows():
+                    comment_id = row['comment_id']
+                    # 检查是否已选中
+                    is_checked = st.checkbox(
+                        f"{row['author']}: {row['content'][:30]}..." if len(row['content']) > 30 else f"{row['author']}: {row['content']}",
+                        value=comment_id in st.session_state.selected_comments,
+                        key=f"comment_{comment_id}"
+                    )
+                    
+                    # 更新会话状态中的选中记录
+                    if is_checked:
+                        st.session_state.selected_comments[comment_id] = {
+                            'id': row['id'],
+                            'comment_id': comment_id,
+                            'author': row['author'],
+                            'content': row['content'],
+                            'reply': row['reply'],
+                            'note_url': row['note_url']
+                        }
+                    elif comment_id in st.session_state.selected_comments:
+                        del st.session_state.selected_comments[comment_id]
+                
+                # 添加传递数据按钮
+                if st.session_state.selected_comments:
+                    if st.button(f"传递选中的 {len(st.session_state.selected_comments)} 条评论到发送页面", key="send_selected_comments"):
+                        # 存储选中的评论到会话状态，以便在send_msg页面使用
+                        st.session_state.comments_to_send = list(st.session_state.selected_comments.values())
+                        st.success(f"已将 {len(st.session_state.selected_comments)} 条评论传递到发送页面，请切换到发送标签页查看")
+                
             # 显示数据表格
             st.dataframe(filtered_reply_df, use_container_width=True)
             
