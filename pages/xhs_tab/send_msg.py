@@ -80,7 +80,7 @@ def send_msg(db: MySQLDatabase):
             # 触发DAG运行
             try:
                 # 创建AirflowClient实例
-                airflow = AirflowClient()
+                airflow = AirflowClient(base_url="https://marketing.lucyai.sale/airflow")
                 
                 dag_id = "xhs_comments_replier"
                 result = airflow.trigger_dag_run(
@@ -120,7 +120,7 @@ def send_msg(db: MySQLDatabase):
             if st.button("刷新发送状态"):
                 try:
                     # 创建AirflowClient实例检查状态
-                    airflow = AirflowClient()
+                    airflow = AirflowClient(base_url="https://marketing.lucyai.sale/airflow")
                     
                     # 获取DAG运行状态
                     status = airflow.get_dag_run_status(

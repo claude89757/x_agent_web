@@ -39,7 +39,7 @@ def create_notes_collection_task():
                     return
                 
                 # 创建AirflowClient实例
-                airflow = AirflowClient()
+                airflow = AirflowClient(base_url="https://marketing.lucyai.sale/airflow")
                 
                 # 自动生成任务ID和备注
                 timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -74,7 +74,7 @@ def get_recent_notes_collection_tasks():
     st.subheader("最近的笔记采集任务")
     try:
         # 创建AirflowClient实例
-        airflow = AirflowClient()
+        airflow = AirflowClient(base_url="https://marketing.lucyai.sale/airflow")
         
         # 获取最近的DAG运行，使用order_by参数按开始时间降序排序
         dag_runs = airflow.get_dag_runs(dag_id="xhs_notes_collector_concurrent", limit=10, order_by="-start_date")
@@ -161,7 +161,7 @@ def get_show_keyword(db: MySQLDatabase):
                 return selected_keyword
             
             # 创建AirflowClient实例
-            airflow = AirflowClient()
+            airflow = AirflowClient(base_url="https://marketing.lucyai.sale/airflow")
             
             # 自动生成任务ID
             timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
