@@ -54,7 +54,7 @@ def create_notes_collection_task():
                 
                 # 触发DAG运行
                 result = airflow.trigger_dag_run(
-                    dag_id="xhs_notes_collector",
+                    dag_id="xhs_notes_collector_concurrent",
                     dag_run_id=dag_run_id,
                     conf=conf,
                 )
@@ -77,7 +77,7 @@ def get_recent_notes_collection_tasks():
         airflow = AirflowClient()
         
         # 获取最近的DAG运行，使用order_by参数按开始时间降序排序
-        dag_runs = airflow.get_dag_runs(dag_id="xhs_notes_collector", limit=10, order_by="-start_date")
+        dag_runs = airflow.get_dag_runs(dag_id="xhs_notes_collector_concurrent", limit=10, order_by="-start_date")
         
         if dag_runs and 'dag_runs' in dag_runs:
             # 提取有用信息
@@ -175,7 +175,7 @@ def get_show_keyword(db: MySQLDatabase):
             
             # 触发DAG运行
             result = airflow.trigger_dag_run(
-                dag_id="xhs_comments_collector",
+                dag_id="xhs_comments_collector_concurrent",
                 dag_run_id=dag_run_id,
                 conf=conf,
             )
